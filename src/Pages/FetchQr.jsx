@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
-import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
-import { deletepost, fetchPosts } from '../API/api';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { deletepost, fetchPosts, updatePost } from '../API/api';
 import { NavLink } from 'react-router-dom'
 
 function FetchQr() {
     const [pageNumber, setPageNumber] = useState(0);
+
+    const queryClient = useQueryClient();
 
     const getPostData = async () => {
         try {
@@ -15,10 +17,14 @@ function FetchQr() {
             throw err;
         }
     }
+
+ // useQuery -> get the data 
+ // useMutation -> use for CRUD operation's
+
     const { data, isLoading, isError, error } = useQuery({
         queryKey: ['posts', pageNumber],
         queryFn: () => getPostData(pageNumber),
-        placeholderData: keepPreviousData,
+        placeholderData: keepPreviousData,  // jab tak new data  recive nahi hota old data ko sho karo 
 
         // gcTimeut: 1000 * 60 * 5, // 5 minutes
         // staleTime: 9000, // 9sec
@@ -28,13 +34,26 @@ function FetchQr() {
         // refetchIntervalInBackground: true, this is polling method continouse calling api in background even if you are not on the page, if you want to stop it then use refetchIntervalInBackground: false
     });
 
+    // Mutation function to delete the post 
     const deleteMutation = useMutation({
         mutationFn: (id) => deletepost(id),
-        onSuccess: ( data,  id) => {  // onsuccess is a callback function that is called when the mutation is successful, it takes two arguments, data and id, data is the response from the server and id is the id of the post that was deleted
-        console.log('post deleated', data, id);
+        onSuccess: (data, id) => {  // onsuccess is a callback function that is called when the mutation is successful, it takes two arguments, data and id, data is the response from the server and id is the id of the post that was deleted
+            queryClient.setQueryData(['posts', pageNumber], (curEle) => {
+                return curEle?.filter((post) => post.id !== id);
+            })
+            // console.log('post deleated', data, id);
         }
     });
 
+    // Mutation functino to update the post  
+    const updateMutation = useMutation({
+        mutationFn: (id) => updatePost(id),
+        onSuccess: (apidata, postId) => {
+            queryClient.setQueryData(['posts', pageNumber], (currentElem) => {
+                return currentElem?.filter((post))
+            })
+        }
+    })
     if (isLoading) {
         return <h1>Loading...</h1>
     }
@@ -57,8 +76,8 @@ function FetchQr() {
                                 <p>{body}</p>
                             </NavLink>
                             <button
-                            className='bg-red-400 text-black p-2 rounded mt-2 font-semibold cursor-pointer hover:bg-red-600' 
-                            onClick={() => deleteMutation.mutate(id)}>Delete</button>
+                                className='bg-red-400 text-black p-2 rounded mt-2 font-semibold cursor-pointer hover:bg-red-600'
+                                onClick={() => deleteMutation.mutate(id)}>Delete</button>
                         </li>
                     )
                 })}

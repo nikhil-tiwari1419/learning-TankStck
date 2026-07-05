@@ -20,7 +20,12 @@ export const fetchIndividualData = (id) => {
 
 
 // DELETE THE POST 
-    export const deletepost = (id) =>{
-        return api.delete(`/posts/${id}`)
-    };
-    
+export const deletepost = (id) => {
+    return api.delete(`/posts/${id}`)
+};
+
+
+// update post
+export const updatePost = (id) => {
+    return api.patch(`/posts/${id}`,{title : "i have updated"});
+};
