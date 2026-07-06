@@ -4,26 +4,30 @@ import { deletepost, fetchPosts, updatePost } from '../API/api';
 import { NavLink } from 'react-router-dom'
 
 function FetchQuery() {
-    const [pageNumber, setPageNumber] = useState(0);
 
+    const [pageNumber, setPageNumber] = useState(0);
     const queryClient = useQueryClient();
 
     const getPostData = async () => {
         try {
             const res = await fetchPosts(pageNumber)
-            return res.data;
+            return {
+                posts: res.data,
+                total: Number(res.headers["x-total-count"]),
+            };
         } catch (err) {
             console.error(err)
             throw err;
         }
     }
 
- // useQuery -> get the data 
- // useMutation -> use for CRUD operation's
+
+    // useQuery -> get the data 
+    // useMutation -> use for CRUD operation's
 
     const { data, isLoading, isError, error } = useQuery({
         queryKey: ['posts', pageNumber],
-        queryFn: () => getPostData(pageNumber),
+        queryFn: getPostData,
         placeholderData: keepPreviousData,  // jab tak new data  recive nahi hota old data ko sho karo 
 
         // gcTimeut: 1000 * 60 * 5, // 5 minutes
@@ -34,14 +38,21 @@ function FetchQuery() {
         // refetchIntervalInBackground: true, this is polling method continouse calling api in background even if you are not on the page, if you want to stop it then use refetchIntervalInBackground: false
     });
 
+
     // Mutation function to delete the post 
     const deleteMutation = useMutation({
         mutationFn: (id) => deletepost(id),
         onSuccess: (data, id) => {  // onsuccess is a callback function that is called when the mutation is successful, it takes two arguments, data and id, data is the response from the server and id is the id of the post that was deleted
-            queryClient.setQueryData(['posts', pageNumber], (curEle) => {
-                return curEle?.filter((post) => post.id !== id);
+            queryClient.setQueryData(['posts', pageNumber], (oldData) => {
+                if(!oldData) return oldData;
+
+                return{
+                    ...oldData,
+                    posts: oldData.posts.filter(post=> post.id !== id),
+                    total: oldData.total - 1,
+                };
             })
-            // console.log('post deleated', data, id);
+            console.log('post deleated', data, id);
         }
     });
 
@@ -62,11 +73,15 @@ function FetchQuery() {
         return <h1>{error.message || 'Something went wrong'}</h1>
     }
 
+    const PAGE_SIZE = 3;
+    const totalpages = data ? Math.ceil(data.total / PAGE_SIZE) : 0;
+
+
     return (
         <div className='min-h-screen'>
             <ul className='pb-20 p-3 m-3 rounded '>
                 <h1 className='text-xs font-bold mb-2'>Modern style component fetch using React Query</h1>
-                {data?.map((curElem) => {
+                {data?.posts.map((curElem) => {
                     const { id, title, body } = curElem;
                     return (
                         <li key={id} className='list-disc border-b p-2 text-left'>
@@ -90,8 +105,9 @@ function FetchQuery() {
                     className="border bg-green-500 rounded p-2 cursor-pointer disabled:opacity-50">Prev</button>
                 <p className="font-bold text-white">{pageNumber / 3}</p>
                 <button
+                    disabled={(pageNumber / PAGE_SIZE) + 1 >= totalpages}
                     onClick={() => setPageNumber((prev) => prev + 3)}
-                    className="border bg-green-500 rounded p-2 cursor-pointer">Next</button>
+                    className="border bg-green-500 rounded p-2 cursor-pointer disabled:opacity-50">Next</button>
             </div>
         </div>
     )
