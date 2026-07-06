@@ -8,7 +8,7 @@ function Header() {
                 <ul className='flex gap-4 text-xl '>
                     <NavLink to="/">Home</NavLink>
                     <li><NavLink to="/trad">FetchOld</NavLink></li>
-                    <li><NavLink to="/qr">FetchQr</NavLink></li>
+                    <li><NavLink to="/qr">FetchQuery</NavLink></li>
                 </ul>
 
             </div>

@@ -3,7 +3,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { deletepost, fetchPosts, updatePost } from '../API/api';
 import { NavLink } from 'react-router-dom'
 
-function FetchQr() {
+function FetchQuery() {
     const [pageNumber, setPageNumber] = useState(0);
 
     const queryClient = useQueryClient();
@@ -97,7 +97,7 @@ function FetchQr() {
     )
 }
 
-export default FetchQr
+export default FetchQuery
 
 
 
