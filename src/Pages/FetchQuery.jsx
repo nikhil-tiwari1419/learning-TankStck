@@ -41,30 +41,57 @@ function FetchQuery() {
 
     // Mutation function to delete the post 
     const deleteMutation = useMutation({
+        mutationKey: ['deletepost'],
         mutationFn: (id) => deletepost(id),
         onSuccess: (data, id) => {  // onsuccess is a callback function that is called when the mutation is successful, it takes two arguments, data and id, data is the response from the server and id is the id of the post that was deleted
             queryClient.setQueryData(['posts', pageNumber], (oldData) => {
-                if(!oldData) return oldData;
+                if (!oldData) return oldData;
 
-                return{
+                return {
                     ...oldData,
-                    posts: oldData.posts.filter(post=> post.id !== id),
+                    posts: oldData.posts.filter(post => post.id !== id),
                     total: oldData.total - 1,
                 };
             })
             console.log('post deleated', data, id);
-        }
+        },
+        onError: (error, id) => {
+            console.log("delete failed");
+            console.log(error);
+            console.log("Failed id:", id);
+        },
     });
 
     // Mutation functino to update the post  
     const updateMutation = useMutation({
+        mutationKey: ['updatePost'],
         mutationFn: (id) => updatePost(id),
         onSuccess: (apidata, postId) => {
-            queryClient.setQueryData(['posts', pageNumber], (currentElem) => {
-                return currentElem?.filter((post))
-            })
-        }
-    })
+            queryClient.setQueryData(['posts', pageNumber], (oldData) => {
+                console.log(apidata, postId)
+                if (!oldData) return oldData;
+
+                return {
+                    ...oldData,
+                    posts: oldData.posts.map((currentPost) =>
+                        currentPost.id === postId
+                            ? { 
+                                ...currentPost, 
+                                title: apidata.data.title, 
+                                body: apidata.data.body,
+                            } 
+                            : currentPost
+                        ),
+                };
+            });
+        },
+        onError: (error, id) => {
+            console.log("delete failed");
+            console.log(error);
+            console.log("Failed id:", id);
+        },
+    });
+
     if (isLoading) {
         return <h1>Loading...</h1>
     }
@@ -91,8 +118,11 @@ function FetchQuery() {
                                 <p>{body}</p>
                             </NavLink>
                             <button
-                                className='bg-red-400 text-black p-2 rounded mt-2 font-semibold cursor-pointer hover:bg-red-600'
+                                className='bg-red-400 text-black p-2 m-2 rounded mt-2 font-semibold cursor-pointer hover:bg-red-600'
                                 onClick={() => deleteMutation.mutate(id)}>Delete</button>
+                            <button
+                                className='bg-red-400 text-black m-2 p-2 rounded mt-2 font-semibold cursor-pointer hover:bg-red-600'
+                                onClick={() => updateMutation.mutate(id)}>Update</button>
                         </li>
                     )
                 })}
@@ -114,6 +144,5 @@ function FetchQuery() {
 }
 
 export default FetchQuery
-
 
 

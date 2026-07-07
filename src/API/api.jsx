@@ -25,7 +25,13 @@ export const deletepost = (id) => {
 };
 
 
+// // update post
+// export const updatePost = (id) => {
+//     return api.patch(`/posts/${id}`, { title: "i have updated" });
+// };
 // update post
 export const updatePost = (id) => {
-    return api.patch(`/posts/${id}`,{title : "i have updated"});
+    return api.put(`/posts/${id}`,
+        { title: "i have updated",body: " this is new updated body"}
+    );
 };
