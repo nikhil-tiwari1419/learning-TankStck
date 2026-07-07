@@ -7,6 +7,7 @@ import Home from './Pages/Home'
 import FetchOld from './Pages/FetchOld'
 import FetchQuery from './Pages/FetchQuery'
 import FetchIndv from './components/Ui/FetchIndv'
+import InfinityScroll from './Pages/InfinityScroll'
 const Router = createBrowserRouter([
   {
     path: '/',
@@ -23,6 +24,10 @@ const Router = createBrowserRouter([
       {
         path: '/qr',
         element: <FetchQuery />
+      },
+      {
+        path:'/infinite',
+        element: <InfinityScroll/>
       },
       {
         path: '/qr/:id',

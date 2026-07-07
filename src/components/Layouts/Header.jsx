@@ -9,6 +9,7 @@ function Header() {
                     <NavLink to="/">Home</NavLink>
                     <li><NavLink to="/trad">FetchOld</NavLink></li>
                     <li><NavLink to="/qr">FetchQuery</NavLink></li>
+                    <li><NavLink to="/infinite">InfinityScroll</NavLink></li>
                 </ul>
 
             </div>
